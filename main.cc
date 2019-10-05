@@ -23,10 +23,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 void open_file(state &program_state);
 void visual_mode(state &program_state);
+void insert_mode(state &program_state);
 void update_position(state &program_state);
-
-
-// stdscr - main screen
+void save_file(state &program_state);
 
 int32_t main(int32_t argc, char** argv)
 {
@@ -134,8 +133,20 @@ void visual_mode(state &program_state)
                 update_position(program_state);             
             }
             break;
+        case 'a':
+            program_state.column += 1;
+            insert_mode(program_state);
+            break;
+        case 'i':
+            insert_mode(program_state);
+            break;
+        case 's':
+            save_file(program_state);
+            break;
         case 'q':
             endwin();
+            for (auto line: program_state.lines)
+                std::cout << line << std::endl;
             exit(EXIT_SUCCESS);
             break;
         default:
@@ -146,13 +157,74 @@ void visual_mode(state &program_state)
     getch();
 }
 
+void insert_mode(state &program_state)
+{
+    //echo();
+    program_state.mode = "INSERT";
+    update_position(program_state);
+    int32_t c;
+
+    while (c = getch())
+    {
+        if (c == 27) // ESC
+            visual_mode(program_state);
+        else if (c == 127) // BACKSPACE
+        {
+            if (program_state.column > 0)
+            {
+                mvwdelch(program_state.edit_window, program_state.line, program_state.column - 1);
+                program_state.lines[program_state.line].erase(program_state.lines[program_state.line].begin() + program_state.column - 1);
+                program_state.column -= 1;
+                wrefresh(program_state.edit_window);
+            }
+        }
+        else if (c == 10) // ENTER
+        {
+            if (program_state.line == program_state.lines.size() - 1)
+            {
+                program_state.lines.push_back("");
+                program_state.line += 1;
+                program_state.column = 0;
+                wmove(program_state.edit_window, program_state.line, program_state.column);
+                wrefresh(program_state.edit_window);
+            }
+        }
+        else
+        {
+            winsch(program_state.edit_window, c);
+            char character = char(c);
+
+            if (program_state.lines[program_state.line] == "")
+                program_state.lines[program_state.line] = std::to_string(character);
+            else
+                program_state.lines[program_state.line].insert(program_state.column, &character);
+
+            program_state.column += 1;
+            wmove(program_state.edit_window, program_state.line, program_state.column);
+            wrefresh(program_state.edit_window);
+            update_position(program_state);
+        }
+    }
+}
+
+
 void update_position(state &program_state)
 {
     werase(program_state.status_bar);
     box(program_state.status_bar, 0, 0);
     mvwprintw(program_state.status_bar, 1, 1, "%s    %s    (%d, %d)", program_state.mode.c_str(), program_state.file_name.c_str(),
               program_state.line + 1, program_state.column + 1);
-    wmove(program_state.edit_window, program_state.line, program_state.column);
     wrefresh(program_state.status_bar);
+    wmove(program_state.edit_window, program_state.line, program_state.column);
     wrefresh(program_state.edit_window);
+}
+
+void save_file(state &program_state)
+{
+    std::ofstream outfile(program_state.file_name);
+
+    for (auto line: program_state.lines)
+        outfile << line << '\n';
+
+    outfile.close();
 }
