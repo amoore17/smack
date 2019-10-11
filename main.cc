@@ -101,7 +101,7 @@ void visual_mode(state &program_state)
         case 'j':
             if (program_state.line < program_state.lines.size() - 1)
             {
-                if (program_state.column > program_state.lines[program_state.line + 1].size())
+                if (program_state.column > program_state.lines[program_state.line + 1].size() - 1)
                 {
                     if (program_state.lines[program_state.line + 1].size() == 0)
                         program_state.column = 0;
@@ -115,7 +115,7 @@ void visual_mode(state &program_state)
         case 'k':
             if (program_state.line != 0)
             {
-                if (program_state.column > program_state.lines[program_state.line - 1].size())
+                if (program_state.column > program_state.lines[program_state.line - 1].size() - 1)
                 {
                     if (program_state.lines[program_state.line - 1].size() == 0)
                         program_state.column = 0;
