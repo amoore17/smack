@@ -134,8 +134,13 @@ void visual_mode(state &program_state)
             }
             break;
         case 'a':
-            program_state.column += 1;
-            insert_mode(program_state);
+            if (program_state.lines[program_state.line].size() > 0)
+            {
+                program_state.column += 1;
+                insert_mode(program_state);
+            }
+            else
+                insert_mode(program_state);
             break;
         case 'i':
             insert_mode(program_state);
