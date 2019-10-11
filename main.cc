@@ -183,6 +183,29 @@ void insert_mode(state &program_state)
                 wrefresh(program_state.edit_window);
             }
         }
+        else
+        {
+            winsch(program_state.edit_window, c);
+            char character = char(c);
+
+            program_state.lines[program_state.line].insert(program_state.lines[program_state.line].begin() + program_state.column, character);
+
+            program_state.column += 1;
+            wmove(program_state.edit_window, program_state.line, program_state.column);
+            wrefresh(program_state.edit_window);
+            update_position(program_state);
+        }
+        /*
+        else if (c == 127) // BACKSPACE
+        {
+            if (program_state.column > 0)
+            {
+                mvwdelch(program_state.edit_window, program_state.line, program_state.column - 1);
+                program_state.lines[program_state.line].erase(program_state.lines[program_state.line].begin() + program_state.column - 1);
+                program_state.column -= 1;
+                wrefresh(program_state.edit_window);
+            }
+        }
         else if (c == 10) // ENTER
         {
             if (program_state.line == program_state.lines.size() - 1)
@@ -209,6 +232,7 @@ void insert_mode(state &program_state)
             wrefresh(program_state.edit_window);
             update_position(program_state);
         }
+        */
     }
 }
 
