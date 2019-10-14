@@ -166,8 +166,6 @@ void visual_mode(state& program_state)
             break;
         case 'q':
             endwin();
-            for (auto line: program_state.lines)
-                std::cout << line << std::endl;
             exit(EXIT_SUCCESS);
             break;
         default:
