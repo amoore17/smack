@@ -67,7 +67,7 @@ void open_file(state& program_state)
 
         for (int32_t i = program_state.page_start; i < program_state.page_end; ++i)
         {
-            if (i > program_state.lines.size())
+            if (i >= program_state.lines.size())
                 break;
 
             wprintw(program_state.edit_window, "%s\n", program_state.lines[i].c_str());
@@ -90,7 +90,7 @@ void refresh_edit_window(state& program_state)
 
     for (int32_t i = program_state.page_start; i < program_state.page_end; ++i)
     {
-        if (i > program_state.lines.size())
+        if (i >= program_state.lines.size())
             break;
 
         wprintw(program_state.edit_window, "%s\n", program_state.lines[i].c_str());
