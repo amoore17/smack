@@ -27,11 +27,15 @@ struct state
 
     WINDOW* edit_window;
     WINDOW* status_bar;
+    const int32_t status_bar_height = 3;
     std::string file_name;
-    int32_t line; // Indexed at 0 internally. The line in edit_window
-    int32_t column; // Indexed at 0 internally. The column in edit_window
     std::string mode;
     std::vector<std::string> lines;
+    int32_t line; // Indexed at 0 internally. The line in edit_window
+    int32_t column; // Indexed at 0 internally. The column in edit_window
+    int32_t page_start;
+    int32_t page_end;
+    int32_t page_length;
 };
 
 state::state()
@@ -39,13 +43,17 @@ state::state()
     int32_t max_y, max_x;
     getmaxyx(stdscr, max_y, max_x);
 
-    status_bar = newwin(3, max_x, 0, 0);
+    status_bar = newwin(status_bar_height, max_x, 0, 0);
     box(status_bar, 0, 0);
-    edit_window = newwin(max_y - 3, max_x, 3, 0);
+    edit_window = newwin(max_y - status_bar_height, max_x, status_bar_height, 0);
 
     line = 0;
     column = 0;
     mode = "VISUAL";
+
+    page_start = 0;
+    page_end = max_y - status_bar_height;
+    page_length = max_y - status_bar_height;
 }
 
 #endif
