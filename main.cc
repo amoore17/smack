@@ -113,13 +113,11 @@ void visual_mode(state& program_state)
         case 'j':
             if (program_state.line < program_state.lines.size() - 1)
             {
-                if (program_state.column > program_state.lines[program_state.line + 1].size() - 1)
-                {
-                    if (program_state.lines[program_state.line + 1].size() == 0)
-                        program_state.column = 0;
-                    else
-                        program_state.column = program_state.lines[program_state.line + 1].size() - 1;
-                }
+                if (program_state.lines[program_state.line + 1].size() == 0)
+                    program_state.column = 0;
+                else if (program_state.column > program_state.lines[program_state.line + 1].size() - 1)
+                    program_state.column = program_state.lines[program_state.line + 1].size() - 1;
+
                 program_state.line += 1;
                 update_position(program_state);
             }
@@ -127,13 +125,11 @@ void visual_mode(state& program_state)
         case 'k':
             if (program_state.line != 0)
             {
-                if (program_state.column > program_state.lines[program_state.line - 1].size() - 1)
-                {
-                    if (program_state.lines[program_state.line - 1].size() == 0)
-                        program_state.column = 0;
-                    else
-                        program_state.column = program_state.lines[program_state.line - 1].size() - 1;
-                }
+                if (program_state.lines[program_state.line - 1].size() == 0)
+                    program_state.column = 0;
+                else if (program_state.column > program_state.lines[program_state.line - 1].size() - 1)
+                    program_state.column = program_state.lines[program_state.line - 1].size() - 1;
+
                 program_state.line -= 1;
                 update_position(program_state);
             }
@@ -194,21 +190,23 @@ void insert_mode(state& program_state)
                 program_state.column -= 1;
                 wrefresh(program_state.edit_window);
             }
-        }
-        else if (c == 10) // ENTER
-        {            
-            if (program_state.column == program_state.lines[program_state.line].size())
-            {
-                if (program_state.line == program_state.lines.size() - 1)
-                    program_state.lines.push_back("");                    
-            }
-            else
+            else if (program_state.line > 0 && program_state.column == 0) // If we need to move back a line
             {
                 std::string new_line = program_state.lines[program_state.line].substr(program_state.column, program_state.lines[program_state.line].size());
-                program_state.lines[program_state.line].erase(program_state.column, new_line.size());
-                program_state.lines.insert(program_state.lines.begin() + program_state.line + 1, new_line);
+                int32_t last_line_size = program_state.lines[program_state.line - 1].size();
+                program_state.lines[program_state.line - 1] += new_line;
+                program_state.lines.erase(program_state.lines.begin() + program_state.line);
+                program_state.line -= 1;
+                program_state.column = last_line_size;
+                refresh_edit_window(program_state);
+                update_position(program_state);
             }
-
+        }
+        else if (c == 10) // ENTER
+        {
+            std::string new_line = program_state.lines[program_state.line].substr(program_state.column, program_state.lines[program_state.line].size());
+            program_state.lines[program_state.line].erase(program_state.column, new_line.size());
+            program_state.lines.insert(program_state.lines.begin() + program_state.line + 1, new_line);
             refresh_edit_window(program_state);
             program_state.line += 1;
             program_state.column = 0;
@@ -224,44 +222,6 @@ void insert_mode(state& program_state)
             program_state.column += 1;
             update_position(program_state);
         }
-        /*
-        else if (c == 127) // BACKSPACE
-        {
-            if (program_state.column > 0)
-            {
-                mvwdelch(program_state.edit_window, program_state.line, program_state.column - 1);
-                program_state.lines[program_state.line].erase(program_state.lines[program_state.line].begin() + program_state.column - 1);
-                program_state.column -= 1;
-                wrefresh(program_state.edit_window);
-            }
-        }
-        else if (c == 10) // ENTER
-        {
-            if (program_state.line == program_state.lines.size() - 1)
-            {
-                program_state.lines.push_back("");
-                program_state.line += 1;
-                program_state.column = 0;
-                wmove(program_state.edit_window, program_state.line, program_state.column);
-                wrefresh(program_state.edit_window);
-            }
-        }
-        else
-        {
-            winsch(program_state.edit_window, c);
-            char character = char(c);
-
-            if (program_state.lines[program_state.line] == "")
-                program_state.lines[program_state.line] = std::to_string(character);
-            else
-                program_state.lines[program_state.line].insert(program_state.column, &character);
-
-            program_state.column += 1;
-            wmove(program_state.edit_window, program_state.line, program_state.column);
-            wrefresh(program_state.edit_window);
-            update_position(program_state);
-        }
-        */
     }
 }
 
