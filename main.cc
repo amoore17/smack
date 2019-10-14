@@ -153,6 +153,14 @@ void visual_mode(state& program_state)
         case 'i':
             insert_mode(program_state);
             break;
+        case '^':
+            program_state.column = 0;
+            update_position(program_state);
+            break;
+        case '$':
+            program_state.column = program_state.lines[program_state.line].size() - 1;
+            update_position(program_state);
+            break;
         case 's':
             save_file(program_state);
             break;
