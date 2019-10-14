@@ -21,11 +21,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ncurses.h>
 #include "state.hh"
 
-void open_file(state &program_state);
-void visual_mode(state &program_state);
-void insert_mode(state &program_state);
-void update_position(state &program_state);
-void save_file(state &program_state);
+void open_file(state& program_state);
+void refresh_edit_window(state& program_state);
+void visual_mode(state& program_state);
+void insert_mode(state& program_state);
+void update_position(state& program_state);
+void save_file(state& program_state);
 
 int32_t main(int32_t argc, char** argv)
 {
@@ -53,7 +54,7 @@ int32_t main(int32_t argc, char** argv)
     return 0;
 }
 
-void open_file(state &program_state)
+void open_file(state& program_state)
 {
     std::ifstream infile(program_state.file_name);
 
@@ -78,7 +79,18 @@ void open_file(state &program_state)
     }
 }
 
-void visual_mode(state &program_state)
+void refresh_edit_window(state& program_state)
+{
+    werase(program_state.edit_window);
+
+    for (auto lin: program_state.lines)
+    {
+        wprintw(program_state.edit_window, "%s\n", lin.c_str());
+        wrefresh(program_state.edit_window);
+    }    
+}
+
+void visual_mode(state& program_state)
 {
     program_state.mode = "VISUAL";
     noecho();
@@ -162,7 +174,7 @@ void visual_mode(state &program_state)
     getch();
 }
 
-void insert_mode(state &program_state)
+void insert_mode(state& program_state)
 {
     //echo();
     program_state.mode = "INSERT";
@@ -183,6 +195,25 @@ void insert_mode(state &program_state)
                 wrefresh(program_state.edit_window);
             }
         }
+        else if (c == 10) // ENTER
+        {            
+            if (program_state.column == program_state.lines[program_state.line].size())
+            {
+                if (program_state.line == program_state.lines.size() - 1)
+                    program_state.lines.push_back("");                    
+            }
+            else
+            {
+                std::string new_line = program_state.lines[program_state.line].substr(program_state.column, program_state.lines[program_state.line].size());
+                program_state.lines[program_state.line].erase(program_state.column, new_line.size());
+                program_state.lines.insert(program_state.lines.begin() + program_state.line + 1, new_line);
+            }
+
+            refresh_edit_window(program_state);
+            program_state.line += 1;
+            program_state.column = 0;
+            update_position(program_state);
+        }
         else
         {
             winsch(program_state.edit_window, c);
@@ -191,8 +222,6 @@ void insert_mode(state &program_state)
             program_state.lines[program_state.line].insert(program_state.lines[program_state.line].begin() + program_state.column, character);
 
             program_state.column += 1;
-            wmove(program_state.edit_window, program_state.line, program_state.column);
-            wrefresh(program_state.edit_window);
             update_position(program_state);
         }
         /*
@@ -237,7 +266,7 @@ void insert_mode(state &program_state)
 }
 
 
-void update_position(state &program_state)
+void update_position(state& program_state)
 {
     werase(program_state.status_bar);
     box(program_state.status_bar, 0, 0);
@@ -248,7 +277,7 @@ void update_position(state &program_state)
     wrefresh(program_state.edit_window);
 }
 
-void save_file(state &program_state)
+void save_file(state& program_state)
 {
     std::ofstream outfile(program_state.file_name);
 
