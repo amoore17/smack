@@ -94,6 +94,10 @@ void visual_mode(state& program_state)
 {
     program_state.mode = "VISUAL";
     noecho();
+
+    if (program_state.column >= program_state.lines[program_state.line].size())
+        program_state.column = program_state.lines[program_state.line].size() - 1;
+    
     update_position(program_state);
     int32_t c;
 
@@ -144,8 +148,11 @@ void visual_mode(state& program_state)
         case 'a':
             if (program_state.lines[program_state.line].size() > 0)
             {
-                program_state.column += 1;
-                insert_mode(program_state);
+                if (program_state.column != program_state.lines[program_state.line].size())
+                {
+                    program_state.column += 1;
+                    insert_mode(program_state);
+                }
             }
             else
                 insert_mode(program_state);
