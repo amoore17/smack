@@ -89,7 +89,12 @@ void refresh_edit_window(state& program_state)
     werase(program_state.edit_window);
 
     for (int32_t i = program_state.page_start; i < program_state.page_end; ++i)
+    {
+        if (i > program_state.lines.size())
+            break;
+
         wprintw(program_state.edit_window, "%s\n", program_state.lines[i].c_str());
+    }
 
     wrefresh(program_state.edit_window);
 }
@@ -224,7 +229,7 @@ void insert_mode(state& program_state)
                 mvwdelch(program_state.edit_window, program_state.line - program_state.page_start, program_state.column - 1);
                 program_state.lines[program_state.line].erase(program_state.lines[program_state.line].begin() + program_state.column - 1);
                 program_state.column -= 1;
-                wrefresh(program_state.edit_window);
+                update_position(program_state);
             }
             else if (program_state.line > 0 && program_state.column == 0) // If we need to move back a line
             {
