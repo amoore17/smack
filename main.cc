@@ -104,7 +104,7 @@ void visual_mode(state& program_state)
     program_state.mode = "VISUAL";
     noecho();
 
-    if (program_state.column >= program_state.lines[program_state.line].size())
+    if (program_state.column >= program_state.lines[program_state.line].size() && program_state.lines[program_state.line].size() != 0)
         program_state.column = program_state.lines[program_state.line].size() - 1;
     
     update_position(program_state);
