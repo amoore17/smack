@@ -25,17 +25,18 @@ struct state
 {
     state();
 
-    WINDOW* edit_window;
-    WINDOW* status_bar;
+    WINDOW* edit_window; // The editing window
+    WINDOW* status_bar; // The top status bar
     const int32_t status_bar_height = 3;
     std::string file_name;
-    std::string mode;
+    std::string mode; // The current mode. VISUAL and INSERT are the only modes
     std::vector<std::string> lines;
-    int32_t line; // Indexed at 0 internally. The line in edit_window
+    int32_t line; // Indexed at 0 internally. The current line number in edit_window
+                  // Note that the user will see the line as the current line number + 1
     int32_t column; // Indexed at 0 internally. The column in edit_window
-    int32_t page_start;
-    int32_t page_end;
-    int32_t page_length;
+                    // Note that the user will see the column as the current column number + 1
+    int32_t page_start; // The line number at the top of the current display
+    int32_t page_end; // The line number at the bottom of the current display
 };
 
 state::state()
@@ -53,7 +54,6 @@ state::state()
 
     page_start = 0;
     page_end = max_y - status_bar_height;
-    page_length = max_y - status_bar_height;
 }
 
 #endif
