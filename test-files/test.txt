@@ -1,5 +1,0 @@
-lesser line
-the greater line
-
-the greater line
-lesser line
