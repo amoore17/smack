@@ -225,6 +225,10 @@ void visual_mode(state& program_state)
             program_state.column = program_state.lines[program_state.line].size() - 1;
             update_position(program_state);
             break;
+        case 'A': // End of line and insert
+            program_state.column = program_state.lines[program_state.line].size();
+            insert_mode(program_state);
+            break;
         case 's': // Save the file
             save_file(program_state);
             break;
