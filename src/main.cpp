@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <iostream>
 #include <string>
 #include <ncurses.h>
-#include "state.hh"
+#include "state.hpp"
 
 void open_file(state& program_state);
 void refresh_edit_window(state& program_state);
