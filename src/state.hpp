@@ -14,8 +14,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#ifndef STATE_HH
-#define STATE_HH
+#ifndef STATE_HPP
+#define STATE_HPP
 
 #include <string>
 #include <vector>
@@ -37,6 +37,7 @@ struct state
                     // Note that the user will see the column as the current column number + 1
     int32_t page_start; // The line number at the top of the current display
     int32_t page_end; // The line number at the bottom of the current display
+    int32_t save_column; // The column the user has navigated too
 };
 
 state::state()
@@ -50,6 +51,7 @@ state::state()
 
     line = 0;
     column = 0;
+    save_column = 0;
     mode = "VISUAL";
 
     page_start = 0;

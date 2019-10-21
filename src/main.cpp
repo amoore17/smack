@@ -123,8 +123,12 @@ void visual_mode(state& program_state)
     program_state.mode = "VISUAL";
     noecho();
 
+    // Move the cursor back if we are over the line size
     if (program_state.column >= program_state.lines[program_state.line].size() && program_state.lines[program_state.line].size() != 0)
+    {
         program_state.column = program_state.lines[program_state.line].size() - 1;
+        program_state.save_column = program_state.column;
+    }
     
     update_position(program_state);
     int32_t c;
@@ -140,6 +144,7 @@ void visual_mode(state& program_state)
             if (program_state.column != 0)
             {
                 program_state.column -= 1;
+                program_state.save_column = program_state.column;
                 update_position(program_state);
             }
 
@@ -159,9 +164,10 @@ void visual_mode(state& program_state)
                 // If the column below us is empty, switch the column number to 0
                 if (program_state.lines[program_state.line + 1].size() == 0)
                     program_state.column = 0;
-                // If the line below us is smaller, move the cursor to the end of the line below
-                else if (program_state.column > program_state.lines[program_state.line + 1].size() - 1)
-                    program_state.column = program_state.lines[program_state.line + 1].size() - 1;
+                else if (program_state.lines[program_state.line + 1].size() > program_state.save_column)
+                    program_state.column = program_state.save_column;
+                else if (program_state.lines[program_state.line + 1].size() <= program_state.save_column)
+                    program_state.column = program_state.lines[program_state.line + 1].size() - 1;                
 
                 program_state.line += 1;
                 update_position(program_state);
@@ -182,8 +188,9 @@ void visual_mode(state& program_state)
                 // If the column above us is empty, switch the column number to 0
                 if (program_state.lines[program_state.line - 1].size() == 0)
                     program_state.column = 0;
-                // If the line above us is smaller, move the cursor to the end of the line below
-                else if (program_state.column > program_state.lines[program_state.line - 1].size() - 1)
+                else if (program_state.lines[program_state.line - 1].size() > program_state.save_column)
+                    program_state.column = program_state.save_column;
+                else if (program_state.lines[program_state.line - 1].size() <= program_state.save_column)
                     program_state.column = program_state.lines[program_state.line - 1].size() - 1;
 
                 program_state.line -= 1;
@@ -196,6 +203,7 @@ void visual_mode(state& program_state)
             if ((program_state.column < program_state.lines[program_state.line].size() - 1) && program_state.lines[program_state.line].size() != 0 )
             {
                 program_state.column += 1;
+                program_state.save_column = program_state.column;
                 update_position(program_state);             
             }
 
@@ -207,6 +215,7 @@ void visual_mode(state& program_state)
                 if (program_state.column != program_state.lines[program_state.line].size())
                 {
                     program_state.column += 1;
+                    program_state.save_column = program_state.column;
                     insert_mode(program_state);
                 }
             }
@@ -219,14 +228,17 @@ void visual_mode(state& program_state)
             break;
         case '^': // Beginning of line
             program_state.column = 0;
+            program_state.save_column = program_state.column;
             update_position(program_state);
             break;
         case '$': // End of line
             program_state.column = program_state.lines[program_state.line].size() - 1;
+            program_state.save_column = program_state.column;
             update_position(program_state);
             break;
         case 'A': // End of line and insert
             program_state.column = program_state.lines[program_state.line].size();
+            program_state.save_column = program_state.column;
             insert_mode(program_state);
             break;
         case 's': // Save the file
@@ -267,6 +279,7 @@ void insert_mode(state& program_state)
                 mvwdelch(program_state.edit_window, program_state.line - program_state.page_start, program_state.column - 1);
                 program_state.lines[program_state.line].erase(program_state.lines[program_state.line].begin() + program_state.column - 1);
                 program_state.column -= 1;
+                program_state.save_column = program_state.column;
                 update_position(program_state);
             }
             else if (program_state.line > 0 && program_state.column == 0) // If we need to move back a line
@@ -277,6 +290,7 @@ void insert_mode(state& program_state)
                 program_state.lines.erase(program_state.lines.begin() + program_state.line);
                 program_state.line -= 1;
                 program_state.column = last_line_size;
+                program_state.save_column = program_state.column;
                 refresh_edit_window(program_state);
                 update_position(program_state);
             }
@@ -289,6 +303,7 @@ void insert_mode(state& program_state)
             refresh_edit_window(program_state);
             program_state.line += 1;
             program_state.column = 0;
+            program_state.save_column = program_state.column;
             update_position(program_state);
         }
         else // Normal character insertion
@@ -299,6 +314,7 @@ void insert_mode(state& program_state)
             program_state.lines[program_state.line].insert(program_state.lines[program_state.line].begin() + program_state.column, character);
 
             program_state.column += 1;
+            program_state.save_column = program_state.column;
             update_position(program_state);
         }
     }
