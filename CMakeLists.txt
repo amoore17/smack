@@ -4,6 +4,7 @@ project(smack)
 
 set(SMACK_SOURCES
 	src/main.cpp
+	src/state.cpp
 )
 
 add_executable(${PROJECT_NAME} ${SMACK_SOURCES})

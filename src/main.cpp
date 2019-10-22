@@ -21,12 +21,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <ncurses.h>
 #include "state.hpp"
 
-void open_file(state& program_state);
 void refresh_edit_window(state& program_state);
 void visual_mode(state& program_state);
 void insert_mode(state& program_state);
 void update_position(state& program_state);
-void save_file(state& program_state);
 
 int32_t main(int32_t argc, char** argv)
 {
@@ -40,8 +38,9 @@ int32_t main(int32_t argc, char** argv)
         wrefresh(program_state.edit_window);
 
         std::string file_name(argv[1]);
-        program_state.file_name = file_name;
-        open_file(program_state);
+        program_state.open_file(file_name);
+        visual_mode(program_state);
+        
         endwin();
         exit(EXIT_SUCCESS);
     }
@@ -52,43 +51,6 @@ int32_t main(int32_t argc, char** argv)
     }
 
     return 0;
-}
-
-/*
- * Function: open_file
- * Parameters: state& program_state - The state of the editor at the time
- * Description: Opens a file specified in argv in visual mode or opens a
- *              new file in visual mode
- */
-void open_file(state& program_state)
-{
-    std::ifstream infile(program_state.file_name);
-
-    if (infile)
-    {
-        std::string line;
-
-        while (std::getline(infile, line))
-            program_state.lines.push_back(line);
-
-        // Display file in the page range
-        for (int32_t i = program_state.page_start; i < program_state.page_end; ++i)
-        {
-            if (i >= program_state.lines.size())
-                break;
-
-            wprintw(program_state.edit_window, "%s\n", program_state.lines[i].c_str());
-            wrefresh(program_state.edit_window);
-        }
-
-        infile.close();
-        visual_mode(program_state);
-    }
-    else // Add an empty line to the new file and enter visual mode
-    {
-        program_state.lines.push_back("");
-        visual_mode(program_state);
-    }
 }
 
 /*
@@ -242,7 +204,7 @@ void visual_mode(state& program_state)
             insert_mode(program_state);
             break;
         case 's': // Save the file
-            save_file(program_state);
+            program_state.save_file();
             break;
         case 'q': // Quit the program
             endwin();
@@ -337,19 +299,4 @@ void update_position(state& program_state)
     wrefresh(program_state.status_bar);
     wmove(program_state.edit_window, program_state.line - program_state.page_start, program_state.column);
     wrefresh(program_state.edit_window);
-}
-
-/*
- * Function: save_file
- * Parameters: state& program_state - The state of the editor at the time
- * Description: Write the vector of strings (lines) out to the desired file
- */
-void save_file(state& program_state)
-{
-    std::ofstream outfile(program_state.file_name);
-
-    for (auto line: program_state.lines)
-        outfile << line << '\n';
-
-    outfile.close();
 }

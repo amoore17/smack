@@ -21,8 +21,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <vector>
 #include <ncurses.h>
 
-struct state
+class state
 {
+public:
     state();
 
     WINDOW* edit_window; // The editing window
@@ -38,24 +39,11 @@ struct state
     int32_t page_start; // The line number at the top of the current display
     int32_t page_end; // The line number at the bottom of the current display
     int32_t save_column; // The column the user has navigated too
+    
+    //Returns true if the file was opened sucessfully
+    bool open_file(std::string& filename);
+    //Returns true if the file was saved sucessfully
+    bool save_file();
 };
-
-state::state()
-{
-    int32_t max_y, max_x;
-    getmaxyx(stdscr, max_y, max_x);
-
-    status_bar = newwin(status_bar_height, max_x, 0, 0);
-    box(status_bar, 0, 0);
-    edit_window = newwin(max_y - status_bar_height, max_x, status_bar_height, 0);
-
-    line = 0;
-    column = 0;
-    save_column = 0;
-    mode = "VISUAL";
-
-    page_start = 0;
-    page_end = max_y - status_bar_height;
-}
 
 #endif
